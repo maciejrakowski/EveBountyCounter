@@ -37,7 +37,7 @@ public static class ConfigurationSetup
             return ValidateAndGetPath(userInput);
         }
 
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: No configuration found. Please enter the logs directory path:");
+        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: No configuration found. Please enter the logs directory path  (most likely: {Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Gamelogs):");
 
         return GetPathFromUser();
     }
