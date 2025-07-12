@@ -4,11 +4,21 @@ on:
   push:
     branches:
       - 'release/v*'
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+    types: [closed]  # Only trigger when PR is closed (merged)
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Only run if it's a push to release/v* OR a merged PR from release/v* to master
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/v')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/v') && github.base_ref == 'master') ||
+      (github.event_name == 'workflow_dispatch')
 
     permissions:
       contents: write
