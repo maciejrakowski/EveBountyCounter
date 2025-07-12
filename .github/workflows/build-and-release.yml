@@ -4,22 +4,11 @@ on:
   push:
     branches:
       - 'release/v*'
-      - 'master'  # Add master branch
-  pull_request:
-    branches:
-      - 'master'
-    types: [closed]  # Only trigger when PR is closed (merged)
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # Only run if it's a push to release/v* OR a merged PR from release/v* to master
-    if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/v')) ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/v') && github.base_ref == 'master') ||
-      (github.event_name == 'workflow_dispatch')
 
     permissions:
       contents: write
@@ -35,14 +24,8 @@ jobs:
     - name: Extract version from branch name
       id: extract_version
       run: |
-        if [ "${{ github.event_name }}" == "pull_request" ]; then
-          # For merged PRs, use the source branch (head_ref)
-          BRANCH_NAME="${{ github.head_ref }}"
-        else
-          # For pushes, use the current branch
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        fi
-        VERSION=${BRANCH_NAME#release/v}
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        VERSION=${BRANCH_NAME#releases/v}
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "Version extracted: $VERSION"
