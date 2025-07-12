@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using EveBountyHunter.Configuration.JsonSerializerContext;
 using EveBountyHunter.Configuration.Models;
 
 namespace EveBountyHunter.Configuration;
@@ -34,7 +35,7 @@ public static class EbhConfiguration
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Cannot read file {ConfigurationFilePath}, exception: {ex.Message}");
         }
 
-        var config = JsonSerializer.Deserialize<EveBountyCounterConfiguration>(fileContent);
+        var config = JsonSerializer.Deserialize(fileContent, DeserializationModeOptionsContext.Default.EveBountyCounterConfiguration);;
 
         return config;
     }
@@ -48,7 +49,7 @@ public static class EbhConfiguration
     /// </remarks>
     public static void SaveConfiguration(EveBountyCounterConfiguration config)
     {
-        var json = JsonSerializer.Serialize(config);
+        var json = JsonSerializer.Serialize(config, SerializationModeOptionsContext.Default.EveBountyCounterConfiguration);
         File.WriteAllText(ConfigurationFilePath, json);
     }
 }
