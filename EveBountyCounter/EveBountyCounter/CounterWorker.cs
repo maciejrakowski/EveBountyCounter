@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using EveBountyCounter.Counter;
 using EveBountyCounter.Counter.Events;
 using EveBountyHunter.Configuration;
@@ -50,7 +51,7 @@ public class CounterWorker : BackgroundWorker
         if (!_userInput)
         {
             Console.WriteLine(
-                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {args.CharacterBounty.CharacterName}: Bounty added {args.BountyIncrease:N0} ISK: Bounty {args.CharacterBounty.TotalBounty:N0} ISK; {args.CharacterBounty.TotalBounty} ; Session total bounty {args.CharacterBounty.SessionTotalBounty:N0} ISK");
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {args.CharacterBounty.CharacterName}: Bounty added {args.BountyIncrease:N2} ISK: Bounty {args.CharacterBounty.TotalBounty:N2} ISK; {args.CharacterBounty.TotalBounty.ToString(new CultureInfo("en-US"))} ; Session total bounty {args.CharacterBounty.SessionTotalBounty:N2} ISK");
         }
     }
 
@@ -140,7 +141,7 @@ public class CounterWorker : BackgroundWorker
         client.DefaultRequestHeaders.Add("x-api-key", apiKey);
         client.DefaultRequestHeaders.Add("Accept", "text/plain");
 
-        var content = new StringContent(bounty.TotalBounty.ToString());
+        var content = new StringContent(bounty.TotalBounty.ToString(new CultureInfo("en-US")));
 
         var response = client.PostAsync("https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update", content).Result;
         if (!response.IsSuccessStatusCode)
@@ -182,7 +183,7 @@ public class CounterWorker : BackgroundWorker
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Select a character:");
             for (int i = 0; i < charactersWithBounties.Count; i++)
             {
-                Console.WriteLine($"{i + 1}: {charactersWithBounties.ElementAt(i).Key}: Bounty: {charactersWithBounties.ElementAt(i).Value.TotalBounty:N0} ISK");
+                Console.WriteLine($"{i + 1}: {charactersWithBounties.ElementAt(i).Key}: Bounty: {charactersWithBounties.ElementAt(i).Value.TotalBounty:N2} ISK");
             }
 
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Enter the number of the character:");
