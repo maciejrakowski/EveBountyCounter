@@ -12,4 +12,9 @@ public class EveBountyCounterConfiguration
     /// Gets or sets the directory path where log files for the application are stored.
     /// </summary>
     public required string LogsDirectory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of API keys for accessing EveWorkbench services.
+    /// </summary>
+    public List<EveWorkbenchApiKey> EveWorkbenchApiKeys { get; set; } = [];
 }
