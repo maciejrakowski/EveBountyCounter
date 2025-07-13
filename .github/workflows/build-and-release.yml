@@ -36,7 +36,17 @@ jobs:
         zip -r ../EveBountyCounter-win-x64.zip win-x64/
         tar -czf ../EveBountyCounter-linux-x64.tar.gz -C linux-x64 .
         tar -czf ../EveBountyCounter-osx-x64.tar.gz -C osx-x64 .
-    
+        
+    - name: Extract Changelog Entry
+      id: changelog
+      run: |
+        # Extract the latest version's changelog
+        VERSION=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//')
+        CHANGELOG_ENTRY=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+        echo "CHANGELOG_ENTRY<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
@@ -45,6 +55,7 @@ jobs:
           EveBountyCounter-win-x64.zip
           EveBountyCounter-linux-x64.tar.gz
           EveBountyCounter-osx-x64.tar.gz
+        body: ${{ steps.changelog.outputs.CHANGELOG_ENTRY }}
         draft: false
         prerelease: false
       env:
