@@ -19,7 +19,7 @@ public class BountyWatcher
     private readonly FileSystemWatcher _watcher;
     private readonly Dictionary<string, CharacterBounty> _characterBounties = new();
 
-    private static readonly Regex BountyRegex = new(@"<b><color=0xff00aa00>([\d,]+) ISK", RegexOptions.Compiled);
+    private static readonly Regex BountyRegex = new(@"<b><color=0xff00aa00>([\d,\.]+) ISK", RegexOptions.Compiled);
     private static readonly Regex UndockingRegex = new("Undocking from", RegexOptions.Compiled);
     private static readonly Regex ListenerRegex = new(@"^\s*Listener:\s*(.+)", RegexOptions.Compiled);
     private static readonly Regex SessionRegex = new(@"^\s*Session Started:\s*(.+)", RegexOptions.Compiled);
@@ -213,7 +213,7 @@ public class BountyWatcher
                         continue;
                     }
 
-                    var valueStr = match.Groups[1].Value.Replace(",", "");
+                    var valueStr = match.Groups[1].Value.Replace(",", "").Replace(".", "");
                     if (long.TryParse(valueStr, out long bounty))
                     {
                         characterBounty.TotalBounty += bounty;
