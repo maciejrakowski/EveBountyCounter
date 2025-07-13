@@ -8,9 +8,21 @@ Outputs in the format:
 Date Time: Character name: bounty (user friendly); bounty (for eve-journal bounty field); total bounty for the session (resets on logout)
 ```
 
-Resets on undock (except session total bounty)
+Resets bounty counter on undock (except session total bounty) or by pressing R.
+In case of more than one character with positive bounty a menu will appear allowing to choose character for that operation.
 
-More features are hopefully coming soon
+More features are hopefully coming soon.
+
+## Help menu
+
+Help menu is accessible by pressing key H. It will show available shortcuts:
+
+```
+EVE Bounty Counter
+H - Help (this screen)
+R - Reset character bounty
+Q or ESC - Quit
+```
 
 Example output:
 ```

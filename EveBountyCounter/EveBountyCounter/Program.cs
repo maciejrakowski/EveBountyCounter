@@ -9,8 +9,24 @@ internal class Program
         CounterWorker worker = new(logsDirectory);
         worker.Start();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q && Console.ReadKey().Key != ConsoleKey.Escape)
+        ConsoleKey key = ConsoleKey.None;
+        while (key != ConsoleKey.Q && key != ConsoleKey.Escape)
         {
+            key = Console.ReadKey().Key;
+
+            switch (key)
+            {
+                case ConsoleKey.H:
+                    Console.WriteLine();
+                    Console.WriteLine("EVE Bounty Counter");
+                    Console.WriteLine("H - Help (this screen)");
+                    Console.WriteLine("R - Reset character bounty");
+                    Console.WriteLine("Q or ESC - Quit");
+                    break;
+                case ConsoleKey.R:
+                    worker.ResetCharacterBounty();
+                    break;
+            }
         }
         
         worker.Stop();

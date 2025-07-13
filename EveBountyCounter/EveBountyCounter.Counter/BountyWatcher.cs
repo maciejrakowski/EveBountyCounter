@@ -37,7 +37,7 @@ public class BountyWatcher
     /// <summary>
     /// Event triggered when a character receives a bounty.
     /// </summary>
-    public event EventHandler<CharacterTrackingEventArgs>? CharacterBountyUpdated;
+    public event EventHandler<CharacterBountyUpdatedEventArgs>? CharacterBountyUpdated;
 
     /// <summary>
     /// Invokes the CharacterTrackingStarted event when a character's bounty tracking begins.
@@ -58,12 +58,13 @@ public class BountyWatcher
     }
 
     /// <summary>
-    /// Invokes the CharacterBountyUpdated event when a character receives a bounty.
+    /// Invokes the CharacterBountyUpdated event when a character's bounty is updated.
     /// </summary>
-    /// <param name="characterBounty">The <see cref="CharacterBounty"/> object containing information about the character whose bounty tracking has started.</param>
-    private void OnCharacterBountyUpdated(CharacterBounty characterBounty)
+    /// <param name="characterBounty">The <see cref="CharacterBounty"/> object containing information about the character whose bounty was updated.</param>
+    /// <param name="bountyIncrease">The amount by which the character's bounty has increased.</param>
+    private void OnCharacterBountyUpdated(CharacterBounty characterBounty, long bountyIncrease)
     {
-        CharacterBountyUpdated?.Invoke(null, new CharacterTrackingEventArgs(characterBounty));
+        CharacterBountyUpdated?.Invoke(null, new CharacterBountyUpdatedEventArgs(characterBounty, bountyIncrease));
     }
 
     public BountyWatcher(string logsDirectory)
@@ -217,7 +218,7 @@ public class BountyWatcher
                     {
                         characterBounty.TotalBounty += bounty;
                         characterBounty.SessionTotalBounty += bounty;
-                        OnCharacterBountyUpdated(characterBounty);
+                        OnCharacterBountyUpdated(characterBounty, bounty);
                     }
                 }
 
@@ -227,6 +228,41 @@ public class BountyWatcher
             {
                 // File might be temporarily locked; skip
             }
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a collection of character names currently being tracked for bounty-related events.
+    /// </summary>
+    /// <returns>
+    /// A collection of strings representing the names of characters currently being tracked.
+    /// </returns>
+    public IEnumerable<string> GetTrackedCharacters()
+    {
+        return _characterBounties.Keys;
+    }
+
+    /// <summary>
+    /// Retrieves the dictionary of character bounties currently being tracked.
+    /// </summary>
+    /// <returns>
+    /// A dictionary where the keys represent character names and the values are <see cref="CharacterBounty"/> objects
+    /// containing information about the respective character's bounty tracking.
+    /// </returns>
+    public IDictionary<string, CharacterBounty> GetCharacterBounties()
+    {
+        return _characterBounties;
+    }
+
+    /// <summary>
+    /// Resets the bounty of a specified character by setting their total bounty to zero.
+    /// </summary>
+    /// <param name="characterName">The name of the character whose bounty is being reset.</param>
+    public void ResetCharacterBounty(string characterName)
+    {
+        if (_characterBounties.TryGetValue(characterName, out var bounty))
+        {
+            bounty.TotalBounty = 0;
         }
     }
 }
