@@ -8,7 +8,7 @@ Outputs in the format:
 Date Time: Character name: bounty (user friendly); bounty (for eve-journal bounty field); total bounty for the session (resets on logout)
 ```
 
-Resets bounty counter on undock (except session total bounty) or by pressing R.
+Resets bounty counter on undock (except session total bounty) or by pressing R.  
 In case of more than one character with positive bounty a menu will appear allowing to choose character for that operation.
 
 More features are hopefully coming soon.
@@ -19,9 +19,9 @@ More features are hopefully coming soon.
 > I strongly suggest configuring API keys when no characters are killing NPC as the console output is not frozen during that process
 > It will be fixed soon
 
-There is possibility to send bounties directly to Eve Journal.
-API key is required. It can be create on https://evejournal.com/my-account/personal-access-tokens.
-Then in EveBountyCounter, press C and follow the steps.
+There is possibility to send bounties directly to Eve Journal.  
+API key is required. It can be create on https://evejournal.com/my-account/personal-access-tokens.  
+Then in EveBountyCounter, press C and follow the steps.  
 Once done, the current bounty value can be send to open run page by pressing S
 
 ## Help menu
