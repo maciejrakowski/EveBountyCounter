@@ -101,4 +101,31 @@ public static class ConfigurationSetup
             }
         }
     }
+
+    /// <summary>
+    /// Prompts the user to enter a character name and API key, and adds the API key to the application configuration.
+    /// </summary>
+    /// <remarks>
+    /// If the provided character name or API key is empty or null, the operation is aborted and a message is displayed to the user.
+    /// The API key is saved using the configuration management methods provided by the EbhConfiguration class.
+    /// </remarks>
+    public static void AddApiKey()
+    {
+        Console.WriteLine();
+        
+        Console.Write("Please provide character name: ");
+        var characterName = Console.ReadLine();
+        Console.Write("Please provide API key: ");
+        var apiKey = Console.ReadLine();
+
+        if (characterName is null || apiKey is null)
+        {
+            Console.WriteLine("Character name or API key cannot be empty. Please try again.");
+            return;
+        }
+        
+        EbhConfiguration.AddApiKey(characterName.Trim(), apiKey.Trim());
+
+        Console.WriteLine($"Added API key for character {characterName} to configuration.");
+    }
 }

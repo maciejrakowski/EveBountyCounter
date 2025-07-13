@@ -249,11 +249,23 @@ public class BountyWatcher
     /// A dictionary where the keys represent character names and the values are <see cref="CharacterBounty"/> objects
     /// containing information about the respective character's bounty tracking.
     /// </returns>
-    public IDictionary<string, CharacterBounty> GetCharacterBounties()
+    public IDictionary<string, CharacterBounty> GetCharactersBounties()
     {
         return _characterBounties;
     }
 
+    /// <summary>
+    /// Retrieves the bounty data for a specified character.
+    /// </summary>
+    /// <param name="characterName">The name of the character for which to retrieve bounty data.</param>
+    /// <returns>
+    /// A <see cref="CharacterBounty"/> object containing information about the specified character's bounty tracking.
+    /// </returns>
+    public CharacterBounty? GetCharacterBounty(string characterName)
+    {
+        return _characterBounties.GetValueOrDefault(characterName);
+    }
+    
     /// <summary>
     /// Resets the bounty of a specified character by setting their total bounty to zero.
     /// </summary>

@@ -13,6 +13,17 @@ In case of more than one character with positive bounty a menu will appear allow
 
 More features are hopefully coming soon.
 
+## API Integration
+
+> [!NOTE]
+> I strongly suggest configuring API keys when no characters are killing NPC as the console output is not frozen during that process
+> It will be fixed soon
+
+There is possibility to send bounties directly to Eve Journal.
+API key is required. It can be create on https://evejournal.com/my-account/personal-access-tokens.
+Then in EveBountyCounter, press C and follow the steps.
+Once done, the current bounty value can be send to open run page by pressing S
+
 ## Help menu
 
 Help menu is accessible by pressing key H. It will show available shortcuts:
@@ -21,6 +32,8 @@ Help menu is accessible by pressing key H. It will show available shortcuts:
 EVE Bounty Counter
 H - Help (this screen)
 R - Reset character bounty
+C - Add API key
+S - Submit bounty
 Q or ESC - Quit
 ```
 

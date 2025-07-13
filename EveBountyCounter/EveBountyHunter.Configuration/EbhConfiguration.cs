@@ -52,4 +52,39 @@ public static class EbhConfiguration
         var json = JsonSerializer.Serialize(config, SerializationModeOptionsContext.Default.EveBountyCounterConfiguration);
         File.WriteAllText(ConfigurationFilePath, json);
     }
+
+    /// <summary>
+    /// Adds an API key for accessing EveWorkbench services to the configuration settings.
+    /// </summary>
+    /// <param name="characterName">The name of the character associated with the API key.</param>
+    /// <param name="apiKey">The API key to add to the configuration settings.</param>
+    /// <remarks>
+    /// This method adds the provided API key to the configuration settings for the specified character.
+    /// If the character already has an API key, the existing key is updated with the provided one.
+    /// </remarks>
+    public static void AddApiKey(string characterName, string apiKey)
+    {
+        var config = GetConfiguration();
+        if (config is null)
+        {
+            return;
+        }
+        
+        var apiKeys = config.EveWorkbenchApiKeys;
+        var existingApiKey = apiKeys.FirstOrDefault(x => x.CharacterName == characterName);
+        if (existingApiKey is not null)
+        {
+            existingApiKey.ApiKey = apiKey;
+        }
+        else
+        {
+            apiKeys.Add(new EveWorkbenchApiKey
+            {
+                CharacterName = characterName,
+                ApiKey = apiKey
+            });
+        }
+        
+        SaveConfiguration(config);
+    }
 }
