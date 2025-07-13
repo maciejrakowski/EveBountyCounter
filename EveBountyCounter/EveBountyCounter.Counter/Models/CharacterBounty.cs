@@ -39,10 +39,10 @@ public class CharacterBounty
     /// <summary>
     /// Gets or sets the total bounty accumulated for the character.
     /// </summary>
-    public long TotalBounty { get; set; }
+    public decimal TotalBounty { get; set; }
     
     /// <summary>
     /// Gets or sets the session-specific bounty accumulated for the character.
     /// </summary>
-    public long SessionTotalBounty { get; set; }
+    public decimal SessionTotalBounty { get; set; }
 }

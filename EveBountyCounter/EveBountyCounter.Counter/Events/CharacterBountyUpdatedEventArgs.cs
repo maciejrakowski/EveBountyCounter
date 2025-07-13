@@ -5,7 +5,7 @@ namespace EveBountyCounter.Counter.Events;
 /// <summary>
 /// Provides data for events related to character bounty updates in the EVE Bounty Counter application.
 /// </summary>
-public class CharacterBountyUpdatedEventArgs(CharacterBounty characterBounty, long bountyIncrease) : EventArgs
+public class CharacterBountyUpdatedEventArgs(CharacterBounty characterBounty, decimal bountyIncrease) : EventArgs
 {
     /// <summary>
     /// Gets the bounty tracking information associated with a specific character.
@@ -18,5 +18,5 @@ public class CharacterBountyUpdatedEventArgs(CharacterBounty characterBounty, lo
     /// <remarks>
     /// This property represents the incremental change in the bounty value for a character since the last bounty update.
     /// </remarks>
-    public long BountyIncrease { get; set; } = bountyIncrease;
+    public decimal BountyIncrease { get; set; } = bountyIncrease;
 }

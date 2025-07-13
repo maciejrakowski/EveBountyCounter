@@ -19,7 +19,7 @@ public class BountyWatcher
     private readonly FileSystemWatcher _watcher;
     private readonly Dictionary<string, CharacterBounty> _characterBounties = new();
 
-    private static readonly Regex BountyRegex = new(@"<b><color=0xff00aa00>([\d,\.]+) ISK", RegexOptions.Compiled);
+    private static readonly Regex BountyRegex = new(@"<b><color=0xff00aa00>(\d{1,3}(?:[,.\s]\d{3})*(?:[,.]\d{1,2})?|\d+(?:[,.]\d{1,2})?)\s*ISK", RegexOptions.Compiled);
     private static readonly Regex UndockingRegex = new("Undocking from", RegexOptions.Compiled);
     private static readonly Regex ListenerRegex = new(@"^\s*Listener:\s*(.+)", RegexOptions.Compiled);
     private static readonly Regex SessionRegex = new(@"^\s*Session Started:\s*(.+)", RegexOptions.Compiled);
@@ -28,12 +28,12 @@ public class BountyWatcher
     /// Event triggered when character tracking is started.
     /// </summary>
     public event EventHandler<CharacterTrackingEventArgs>? CharacterTrackingStarted;
-    
+
     /// <summary>
     /// Event triggered when a character undocks.
     /// </summary>
     public event EventHandler<CharacterTrackingEventArgs>? CharacterUndocking;
-    
+
     /// <summary>
     /// Event triggered when a character receives a bounty.
     /// </summary>
@@ -62,11 +62,15 @@ public class BountyWatcher
     /// </summary>
     /// <param name="characterBounty">The <see cref="CharacterBounty"/> object containing information about the character whose bounty was updated.</param>
     /// <param name="bountyIncrease">The amount by which the character's bounty has increased.</param>
-    private void OnCharacterBountyUpdated(CharacterBounty characterBounty, long bountyIncrease)
+    private void OnCharacterBountyUpdated(CharacterBounty characterBounty, decimal bountyIncrease)
     {
         CharacterBountyUpdated?.Invoke(null, new CharacterBountyUpdatedEventArgs(characterBounty, bountyIncrease));
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BountyWatcher"/> class.
+    /// </summary>
+    /// <param name="logsDirectory">The path to the directory containing game logs.</param>
     public BountyWatcher(string logsDirectory)
     {
         _logsDirectory = logsDirectory;
@@ -79,7 +83,7 @@ public class BountyWatcher
 
         _watcher.Created += (s, e) => { ScanCharacterLogs(_logsDirectory); };
 
-        _watcher.Changed += (s, e) => { MonitorAllLogs(); };
+        _watcher.Changed += (s, e) => { CheckLogFileForBounties(e); };
     }
 
     /// <summary>
@@ -181,54 +185,79 @@ public class BountyWatcher
     }
 
     /// <summary>
-    /// Monitors all logs in the logs directory for changes and updates the bounty data for each character.
+    /// Checks a log file for bounty-related events and updates the bounty data for the character.
     /// </summary>
-    /// <remarks>
-    /// This method monitors all logs in the logs directory for changes and updates the bounty data for each character.
-    /// It uses a regular expression to extract the bounty value from the log line, and uses the extracted value to update the bounty data.
-    /// If the log line does not contain a bounty value, it skips the line.
-    /// </remarks>   
-    private void MonitorAllLogs()
+    /// <param name="fileSystemEventArgs">The <see cref="FileSystemEventArgs"/> object containing information about the log file that was changed.</param>
+    private void CheckLogFileForBounties(FileSystemEventArgs fileSystemEventArgs)
     {
-        foreach (var characterBounty in _characterBounties.Values)
+        var characterBounty = _characterBounties.Values.FirstOrDefault(x => x.LogFilePath == fileSystemEventArgs.FullPath);
+        if (characterBounty is null)
         {
-            try
+            return;
+        }
+
+        try
+        {
+            using var stream = new FileStream(characterBounty.LogFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            stream.Seek(characterBounty.LastPosition, SeekOrigin.Begin);
+
+            using var reader = new StreamReader(stream);
+            while (reader.ReadLine() is { } line)
             {
-                using var stream = new FileStream(characterBounty.LogFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                stream.Seek(characterBounty.LastPosition, SeekOrigin.Begin);
-
-                using var reader = new StreamReader(stream);
-                while (reader.ReadLine() is { } line)
+                if (UndockingRegex.IsMatch(line))
                 {
-                    if (UndockingRegex.IsMatch(line))
-                    {
-                        characterBounty.TotalBounty = 0;
-                        OnCharacterUndocking(characterBounty);
-                        continue;
-                    }
-
-                    var match = BountyRegex.Match(line);
-                    if (!match.Success)
-                    {
-                        continue;
-                    }
-
-                    var valueStr = match.Groups[1].Value.Replace(",", "").Replace(".", "");
-                    if (long.TryParse(valueStr, out long bounty))
-                    {
-                        characterBounty.TotalBounty += bounty;
-                        characterBounty.SessionTotalBounty += bounty;
-                        OnCharacterBountyUpdated(characterBounty, bounty);
-                    }
+                    characterBounty.TotalBounty = 0;
+                    OnCharacterUndocking(characterBounty);
+                    continue;
                 }
 
-                characterBounty.LastPosition = stream.Position;
+                var match = BountyRegex.Match(line);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+
+                var bounty = GetBountyFromRegexMatch(match);
+                if (bounty > 0)
+                {
+                    characterBounty.TotalBounty += bounty;
+                    characterBounty.SessionTotalBounty += bounty;
+                    OnCharacterBountyUpdated(characterBounty, bounty);
+                }
             }
-            catch (IOException)
-            {
-                // File might be temporarily locked; skip
-            }
+
+            characterBounty.LastPosition = stream.Position;
         }
+        catch (IOException)
+        {
+            // File might be temporarily locked; skip
+        }
+    }
+
+    private decimal GetBountyFromRegexMatch(Match match)
+    {
+        var valueStr = match.Groups[1].Value;
+
+        // 1.00 must be of length at least = 4
+        if (valueStr.Length <= 3)
+        {
+            return decimal.TryParse(valueStr, out decimal bounty) ? bounty : 0;
+        }
+
+        bool isDecimal = valueStr.LastIndexOfAny(['.', ','], valueStr.Length - 3, 1) > 0;
+
+        if (long.TryParse(valueStr.Replace(".", "").Replace(",", ""), out long decimalBounty))
+        {
+            if (isDecimal)
+            {
+                return (decimal)decimalBounty / 100;
+            }
+
+            return decimalBounty;
+        }
+
+        return 0;
     }
 
     /// <summary>
@@ -265,7 +294,7 @@ public class BountyWatcher
     {
         return _characterBounties.GetValueOrDefault(characterName);
     }
-    
+
     /// <summary>
     /// Resets the bounty of a specified character by setting their total bounty to zero.
     /// </summary>
