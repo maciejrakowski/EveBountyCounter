@@ -5,7 +5,7 @@ internal class Program
     static void Main()
     {
         string logsDirectory = ConfigurationSetup.GetLogsDirectory();
-        
+
         CounterWorker worker = new(logsDirectory);
         worker.Start();
 
@@ -23,22 +23,45 @@ internal class Program
                     Console.WriteLine("R - Reset character bounty");
                     Console.WriteLine("C - Add API key");
                     Console.WriteLine("S - Submit bounty");
+                    Console.WriteLine("L - Update Logs Directory");
                     Console.WriteLine("Q or ESC - Quit");
                     break;
                 case ConsoleKey.R:
                     worker.ResetCharacterBounty();
                     break;
                 case ConsoleKey.C:
-                  ConfigurationSetup.AddApiKey();
+                    try
+                    {
+                        worker.PauseConsoleOutput();
+                        ConfigurationSetup.AddApiKey();
+                    }
+                    finally
+                    {
+                        worker.ResumeConsoleOutput();
+                    }
+
                     break;
                 case ConsoleKey.S:
                     worker.SubmitBounty();
                     break;
+                case ConsoleKey.L:
+                    try
+                    {
+                        worker.PauseConsoleOutput();
+                        var newLogsDirectory = ConfigurationSetup.GetLogsDirectoryFromUser();
+                        worker.Stop();
+                        worker = new CounterWorker(newLogsDirectory);
+                        worker.Start();
+                    }
+                    finally
+                    {
+                        worker.ResumeConsoleOutput();
+                    }
+
+                    break;
             }
         }
-        
+
         worker.Stop();
     }
 }
-
-

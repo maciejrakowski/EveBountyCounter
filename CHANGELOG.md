@@ -2,6 +2,12 @@
 
 All notable changes to EveBountyCounter project will be documented in this file.
 
+## [0.2.3] - 2025-07-14
+
+### Changed
+- Streamlined application start by removing logs directory prompt if configuration exists
+- Setting up API key for EVEWorkbench no pauses console output allowing setting it up while in combat
+
 ## [0.2.2] - 2025-07-13
 
 ### Changed
