@@ -8,6 +8,18 @@ namespace EveBountyCounter;
 /// </summary>
 public static class ConfigurationSetup
 {
+    public static string GetLogsDirectory()
+    {
+        var config = EbhConfiguration.GetConfiguration();
+        if (config is not null && !string.IsNullOrEmpty(config.LogsDirectory))
+        {
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Current logs directory: {config.LogsDirectory}");
+            return config.LogsDirectory;
+        }
+
+        return GetLogsDirectoryFromUser();
+    }
+    
     /// <summary>
     /// Retrieves the directory path for game logs used by the application.
     /// </summary>
@@ -15,7 +27,7 @@ public static class ConfigurationSetup
     /// The directory path for game logs as a string. If a valid configuration is found,
     /// it returns the configured logs directory. Otherwise, prompts the user to input a valid logs directory path.
     /// </returns>
-    public static string GetLogsDirectory()
+    public static string GetLogsDirectoryFromUser()
     {
         var config = EbhConfiguration.GetConfiguration();
 

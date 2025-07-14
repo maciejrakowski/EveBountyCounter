@@ -13,7 +13,7 @@ namespace EveBountyCounter;
 public class CounterWorker : BackgroundWorker
 {
     private readonly BountyWatcher _bountyWatcher;
-    private bool _userInput = false;
+    private bool _outputToConsole = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CounterWorker" /> class.
@@ -32,7 +32,7 @@ public class CounterWorker : BackgroundWorker
 
     private void OnBountyWatcherOnCharacterTrackingStarted(object? sender, CharacterTrackingEventArgs args)
     {
-        if (!_userInput)
+        if (_outputToConsole)
         {
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {args.CharacterBounty.CharacterName}: tracking");
         }
@@ -40,7 +40,7 @@ public class CounterWorker : BackgroundWorker
 
     private void OnBountyWatcherOnCharacterUndocking(object? sender, CharacterTrackingEventArgs args)
     {
-        if (!_userInput)
+        if (_outputToConsole)
         {
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {args.CharacterBounty.CharacterName}: undocking");
         }
@@ -48,7 +48,7 @@ public class CounterWorker : BackgroundWorker
 
     private void OnBountyWatcherOnCharacterBountyUpdated(object? sender, CharacterBountyUpdatedEventArgs args)
     {
-        if (!_userInput)
+        if (_outputToConsole)
         {
             Console.WriteLine(
                 $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {args.CharacterBounty.CharacterName}: Bounty added {args.BountyIncrease:N2} ISK: Bounty {args.CharacterBounty.TotalBounty:N2} ISK; {args.CharacterBounty.TotalBounty.ToString(new CultureInfo("en-US"))} ; Session total bounty {args.CharacterBounty.SessionTotalBounty:N2} ISK");
@@ -72,6 +72,24 @@ public class CounterWorker : BackgroundWorker
     }
 
     /// <summary>
+    /// Disables console output by setting the internal flag to false.
+    /// This can be used to temporarily suppress logging or output to the console.
+    /// </summary>
+    public void PauseConsoleOutput()
+    {
+        _outputToConsole = false;
+    }
+    
+    /// <summary>
+    /// Enables console output by setting the internal flag to true.
+    /// This can be used to resume logging or output to the console.
+    /// </summary>   
+    public void ResumeConsoleOutput()
+    {
+        _outputToConsole = true;
+    }
+    
+    /// <summary>
     /// Resets the bounty of a specified character or allows the user to select and reset
     /// bounties for characters with outstanding bounties.
     /// </summary>
@@ -82,23 +100,31 @@ public class CounterWorker : BackgroundWorker
     /// </remarks>
     public void ResetCharacterBounty()
     {
-        Console.WriteLine();
-        _userInput = true;
-
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Resetting bounty:");
-
-        var characterName = GetCharacterForUserInput();
-        if (characterName is null)
+        try
         {
-            _userInput = false;
-            return;
+            PauseConsoleOutput();
+            Console.WriteLine();
+
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Resetting bounty:");
+
+            var characterName = GetCharacterForUserInput();
+            if (characterName is null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Resetting bounty");
+            _bountyWatcher.ResetCharacterBounty(characterName);
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Bounty reset");
         }
-
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Resetting bounty");
-        _bountyWatcher.ResetCharacterBounty(characterName);
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Bounty reset");
-
-        _userInput = false;
+        catch
+        {
+            // ignored
+        }
+        finally
+        {
+            ResumeConsoleOutput();
+        }
     }
 
     /// <summary>
@@ -110,49 +136,53 @@ public class CounterWorker : BackgroundWorker
     /// </remarks>
     public void SubmitBounty()
     {
-        Console.WriteLine();
-        _userInput = true;
-
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Submitting bounty:");
-        var characterName = GetCharacterForUserInput();
-        if (characterName is null)
+        try
         {
-            _userInput = false;
-            return;
-        }
+            PauseConsoleOutput();
+            
+            Console.WriteLine();
 
-        var bounty = _bountyWatcher.GetCharacterBounty(characterName);
-        if (bounty is null)
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Submitting bounty:");
+            var characterName = GetCharacterForUserInput();
+            if (characterName is null)
+            {
+                return;
+            }
+
+            var bounty = _bountyWatcher.GetCharacterBounty(characterName);
+            if (bounty is null)
+            {
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: No bounty found");
+                return;
+            }
+
+            var configuration = EbhConfiguration.GetConfiguration();
+            var apiKey = configuration?.EveWorkbenchApiKeys.FirstOrDefault(x => x.CharacterName == characterName)?.ApiKey;
+            if (apiKey is null)
+            {
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: No API key found");
+                return;
+            }
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+            client.DefaultRequestHeaders.Add("Accept", "text/plain");
+
+            var content = new StringContent(bounty.TotalBounty.ToString(new CultureInfo("en-US")));
+
+            var response = client.PostAsync("https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update", content).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Error retrieving bounties: {response.StatusCode}");
+                return;
+            }
+
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Bounty submitted");
+        }
+        finally
         {
-            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: No bounty found");
-            return;
+            ResumeConsoleOutput();
         }
-
-        var configuration = EbhConfiguration.GetConfiguration();
-        var apiKey = configuration?.EveWorkbenchApiKeys.FirstOrDefault(x => x.CharacterName == characterName)?.ApiKey;
-        if (apiKey is null)
-        {
-            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: No API key found");
-            _userInput = false;
-            return;
-        }
-
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("x-api-key", apiKey);
-        client.DefaultRequestHeaders.Add("Accept", "text/plain");
-
-        var content = new StringContent(bounty.TotalBounty.ToString(new CultureInfo("en-US")));
-
-        var response = client.PostAsync("https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update", content).Result;
-        if (!response.IsSuccessStatusCode)
-        {
-            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Error retrieving bounties: {response.StatusCode}");
-            _userInput = false;
-            return;
-        }
-
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Bounty submitted");
-        _userInput = false;
     }
 
     /// <summary>
