@@ -2,7 +2,7 @@
 
 All notable changes to EveBountyCounter project will be documented in this file.
 
-## [UNRELEASED]
+## [0.2.3] - 2025-07-14
 
 ### Changed
 - Streamlined application start by removing logs directory prompt if configuration exists
