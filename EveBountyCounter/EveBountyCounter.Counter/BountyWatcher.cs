@@ -235,6 +235,11 @@ public class BountyWatcher
         }
     }
 
+    /// <summary>
+    /// Extracts and calculates the bounty value from a regex match object, adjusting for potential decimal formatting.
+    /// </summary>
+    /// <param name="match">The <see cref="Match"/> object containing the regex capture groups for parsing bounty values.</param>
+    /// <returns>The calculated bounty amount as a decimal. Returns 0 if parsing fails or the value is invalid.</returns>
     private decimal GetBountyFromRegexMatch(Match match)
     {
         var valueStr = match.Groups[1].Value;

@@ -2,6 +2,7 @@
 using System.Globalization;
 using EveBountyCounter.Counter;
 using EveBountyCounter.Counter.Events;
+using EveBountyCounter.EwbApiClient;
 using EveBountyHunter.Configuration;
 
 namespace EveBountyCounter;
@@ -12,16 +13,21 @@ namespace EveBountyCounter;
 /// </summary>
 public class CounterWorker : BackgroundWorker
 {
+    private readonly IEwbApiClient _ewbApiClient;
     private readonly BountyWatcher _bountyWatcher;
+    private readonly IEbhConfiguration _ebhConfiguration;
     private bool _outputToConsole = true;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CounterWorker" /> class.
+    /// A worker class that performs asynchronous operations to monitor and log bounty-related events
+    /// for characters in the EVE Online game. Inherits functionality from <see cref="BackgroundWorker" />.
     /// </summary>
-    /// <param name="logsDirectory">The directory path for game logs.</param>
-    public CounterWorker(string logsDirectory)
+    public CounterWorker(IEbhConfiguration ebhConfiguration, IEwbApiClient ewbApiClient)
     {
-        _bountyWatcher = new BountyWatcher(logsDirectory);
+        _ewbApiClient = ewbApiClient;
+        _ebhConfiguration = ebhConfiguration;
+
+        _bountyWatcher = new BountyWatcher(_ebhConfiguration.GetConfiguration()!.LogsDirectory);
 
         _bountyWatcher.CharacterTrackingStarted += OnBountyWatcherOnCharacterTrackingStarted;
 
@@ -79,7 +85,7 @@ public class CounterWorker : BackgroundWorker
     {
         _outputToConsole = false;
     }
-    
+
     /// <summary>
     /// Enables console output by setting the internal flag to true.
     /// This can be used to resume logging or output to the console.
@@ -88,7 +94,7 @@ public class CounterWorker : BackgroundWorker
     {
         _outputToConsole = true;
     }
-    
+
     /// <summary>
     /// Resets the bounty of a specified character or allows the user to select and reset
     /// bounties for characters with outstanding bounties.
@@ -134,12 +140,12 @@ public class CounterWorker : BackgroundWorker
     /// This method retrieves the bounty information for a specified character, validates the presence of an API key,
     /// and posts the bounty data to the EVEWorkbench real-time bounty update endpoint. 
     /// </remarks>
-    public void SubmitBounty()
+    public async Task SubmitBountyAsync()
     {
         try
         {
             PauseConsoleOutput();
-            
+
             Console.WriteLine();
 
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Submitting bounty:");
@@ -156,24 +162,35 @@ public class CounterWorker : BackgroundWorker
                 return;
             }
 
-            var configuration = EbhConfiguration.GetConfiguration();
-            var apiKey = configuration?.EveWorkbenchApiKeys.FirstOrDefault(x => x.CharacterName == characterName)?.ApiKey;
-            if (apiKey is null)
+            var character = _ebhConfiguration.GetCharacter(characterName);
+            if (character is null)
             {
                 Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: No API key found");
                 return;
             }
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("x-api-key", apiKey);
-            client.DefaultRequestHeaders.Add("Accept", "text/plain");
-
-            var content = new StringContent(bounty.TotalBounty.ToString(new CultureInfo("en-US")));
-
-            var response = client.PostAsync("https://api.eveworkbench.com/v1/eve-journal/realtime-bounty-update", content).Result;
-            if (!response.IsSuccessStatusCode)
+            if (character.CharacterId is null)
             {
-                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Error retrieving bounties: {response.StatusCode}");
+                var characters = await _ewbApiClient.GetCharactersAsync(character.ApiKey);
+
+                foreach (var c in characters)
+                {
+                    _ebhConfiguration.AddApiKey(c.Name.Trim(), c.Id, character.ApiKey);
+                }
+                character = _ebhConfiguration.GetCharacter(characterName);
+                
+                if (character is null)
+                {
+                    Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: character info update failed. Please try again.");
+                    return;
+                }
+            }
+            
+            var submitted = await _ewbApiClient.SubmitBountyAsync(character.ApiKey, character.CharacterId.ToString()!, bounty.TotalBounty);
+
+            if (!submitted)
+            {
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Error submitting bounties");
                 return;
             }
 

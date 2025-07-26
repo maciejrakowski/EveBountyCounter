@@ -14,7 +14,7 @@ public class EveBountyCounterConfiguration
     public required string LogsDirectory { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of API keys for accessing EveWorkbench services.
+    /// Gets or sets the list of API keys for accessing EveWorkbench services.
     /// </summary>
-    public List<EveWorkbenchApiKey> EveWorkbenchApiKeys { get; set; } = [];
+    public List<EveWorkbenchCharacterApi> EveWorkbenchCharacterApis { get; set; } = [];
 }

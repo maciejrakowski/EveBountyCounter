@@ -1,67 +1,35 @@
 ﻿using EveBountyCounter;
+using EveBountyCounter.EwbApiClient.Framework;
+using EveBountyHunter.Configuration.Framework;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 
 internal class Program
 {
-    static void Main()
+    static async Task Main(string[] args)
     {
-        string logsDirectory = ConfigurationSetup.GetLogsDirectory();
+        var builder = Host.CreateApplicationBuilder(args);
+        
+        // Register your services
+        builder.Services.AddSingleton<IConfigurationSetup, ConfigurationSetup>();
+        builder.Services.AddTransient<CounterWorker>();
+        builder.Services.AddSingleton<ConsoleApplication>();
 
-        CounterWorker worker = new(logsDirectory);
-        worker.Start();
-
-        ConsoleKey key = ConsoleKey.None;
-        while (key != ConsoleKey.Q && key != ConsoleKey.Escape)
-        {
-            key = Console.ReadKey().Key;
-
-            switch (key)
-            {
-                case ConsoleKey.H:
-                    Console.WriteLine();
-                    Console.WriteLine("EVE Bounty Counter");
-                    Console.WriteLine("H - Help (this screen)");
-                    Console.WriteLine("R - Reset character bounty");
-                    Console.WriteLine("C - Add API key");
-                    Console.WriteLine("S - Submit bounty");
-                    Console.WriteLine("L - Update Logs Directory");
-                    Console.WriteLine("Q or ESC - Quit");
-                    break;
-                case ConsoleKey.R:
-                    worker.ResetCharacterBounty();
-                    break;
-                case ConsoleKey.C:
-                    try
-                    {
-                        worker.PauseConsoleOutput();
-                        ConfigurationSetup.AddApiKey();
-                    }
-                    finally
-                    {
-                        worker.ResumeConsoleOutput();
-                    }
-
-                    break;
-                case ConsoleKey.S:
-                    worker.SubmitBounty();
-                    break;
-                case ConsoleKey.L:
-                    try
-                    {
-                        worker.PauseConsoleOutput();
-                        var newLogsDirectory = ConfigurationSetup.GetLogsDirectoryFromUser();
-                        worker.Stop();
-                        worker = new CounterWorker(newLogsDirectory);
-                        worker.Start();
-                    }
-                    finally
-                    {
-                        worker.ResumeConsoleOutput();
-                    }
-
-                    break;
-            }
-        }
-
-        worker.Stop();
+        builder.Services.UseEbhConfiguration();
+        builder.Services.UseEwbApiClient();
+        
+        // Add logging
+        // builder.Services.AddLogging(logging => 
+        // {
+        //     logging.AddConsole();
+        //     logging.SetMinimumLevel(LogLevel.Information);
+        // });
+        
+        var host = builder.Build();
+        
+        // Get the application service and run it
+        var app = host.Services.GetRequiredService<ConsoleApplication>();
+        await app.RunAsync();
     }
 }
