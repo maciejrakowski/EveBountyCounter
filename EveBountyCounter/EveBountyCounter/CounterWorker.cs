@@ -14,7 +14,7 @@ namespace EveBountyCounter;
 public class CounterWorker : BackgroundWorker
 {
     private readonly IEwbApiClient _ewbApiClient;
-    private readonly BountyWatcher _bountyWatcher;
+    private BountyWatcher _bountyWatcher;
     private readonly IEbhConfiguration _ebhConfiguration;
     private bool _outputToConsole = true;
 
@@ -26,8 +26,11 @@ public class CounterWorker : BackgroundWorker
     {
         _ewbApiClient = ewbApiClient;
         _ebhConfiguration = ebhConfiguration;
+    }
 
-        _bountyWatcher = new BountyWatcher(_ebhConfiguration.GetConfiguration()!.LogsDirectory);
+    private void InitializeBountyWatcher()
+    {
+        _bountyWatcher = new BountyWatcher(_ebhConfiguration.GetConfiguration()?.LogsDirectory ?? string.Empty);
 
         _bountyWatcher.CharacterTrackingStarted += OnBountyWatcherOnCharacterTrackingStarted;
 
@@ -66,6 +69,7 @@ public class CounterWorker : BackgroundWorker
     /// </summary>
     public void Start()
     {
+        InitializeBountyWatcher();
         _bountyWatcher.Start();
     }
 
