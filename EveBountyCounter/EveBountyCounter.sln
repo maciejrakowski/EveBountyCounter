@@ -4,7 +4,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveBountyCounter", "EveBoun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveBountyCounter.Counter", "EveBountyCounter.Counter\EveBountyCounter.Counter.csproj", "{A9F08529-C726-4EE3-9EAC-3A82FE603579}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveBountyHunter.Configuration", "EveBountyHunter.Configuration\EveBountyHunter.Configuration.csproj", "{31E9765B-67AB-45C0-A594-B707BE653B42}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveBountyCounter.Configuration", "EveBountyCounter.Configuration\EveBountyCounter.Configuration.csproj", "{31E9765B-67AB-45C0-A594-B707BE653B42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EveBountyCounter.EwbApiClient", "EveBountyCounter.EwbApiClient\EveBountyCounter.EwbApiClient.csproj", "{88E868CA-B74D-4ED9-967B-1FB68446ECA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +26,9 @@ Global
 		{31E9765B-67AB-45C0-A594-B707BE653B42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31E9765B-67AB-45C0-A594-B707BE653B42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31E9765B-67AB-45C0-A594-B707BE653B42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88E868CA-B74D-4ED9-967B-1FB68446ECA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88E868CA-B74D-4ED9-967B-1FB68446ECA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88E868CA-B74D-4ED9-967B-1FB68446ECA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88E868CA-B74D-4ED9-967B-1FB68446ECA9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

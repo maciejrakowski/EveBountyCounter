@@ -5,5 +5,5 @@ namespace EveBountyHunter.Configuration.JsonSerializerContext;
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, GenerationMode = JsonSourceGenerationMode.Default)]
 [JsonSerializable(typeof(EveBountyCounterConfiguration))]
-[JsonSerializable(typeof(EveWorkbenchApiKey))]
+[JsonSerializable(typeof(EveWorkbenchCharacterApi))]
 internal partial class DeserializationModeOptionsContext : System.Text.Json.Serialization.JsonSerializerContext;

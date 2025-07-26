@@ -26,7 +26,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EveBountyCounter.Counter\EveBountyCounter.Counter.csproj" />
-      <ProjectReference Include="..\EveBountyHunter.Configuration\EveBountyHunter.Configuration.csproj" />
+      <ProjectReference Include="..\EveBountyCounter.Configuration\EveBountyCounter.Configuration.csproj" />
+      <ProjectReference Include="..\EveBountyCounter.EwbApiClient\EveBountyCounter.EwbApiClient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
     </ItemGroup>
 
 </Project>

@@ -1,16 +1,15 @@
-﻿using EveBountyHunter.Configuration;
+﻿using EveBountyCounter.EwbApiClient;
+using EveBountyHunter.Configuration;
 using EveBountyHunter.Configuration.Models;
 
 namespace EveBountyCounter;
 
-/// <summary>
-/// Provides setup and configuration management for the EVE Bounty Counter application.
-/// </summary>
-public static class ConfigurationSetup
+/// <inheritdoc cref="IConfigurationSetup"/>
+public class ConfigurationSetup(IEbhConfiguration ebhConfiguration, IEwbApiClient ewbApiClient) : IConfigurationSetup
 {
-    public static string GetLogsDirectory()
+    public string GetLogsDirectory()
     {
-        var config = EbhConfiguration.GetConfiguration();
+        var config = ebhConfiguration.GetConfiguration();
         if (config is not null && !string.IsNullOrEmpty(config.LogsDirectory))
         {
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Current logs directory: {config.LogsDirectory}");
@@ -19,7 +18,29 @@ public static class ConfigurationSetup
 
         return GetLogsDirectoryFromUser();
     }
-    
+
+    public async Task AddApiKey()
+    {
+        Console.WriteLine();
+
+        Console.Write("Please provide API key: ");
+        var apiKey = Console.ReadLine();
+
+        if (apiKey is null)
+        {
+            Console.WriteLine("API key cannot be empty. Please try again.");
+            return;
+        }
+
+        var characters = await ewbApiClient.GetCharactersAsync(apiKey);
+
+        foreach (var character in characters)
+        {
+            ebhConfiguration.AddApiKey(character.Name.Trim(), character.Id, apiKey.Trim());
+            Console.WriteLine($"Added API key for character {character.Name}({character.Id}) to configuration.");
+        }
+    }
+
     /// <summary>
     /// Retrieves the directory path for game logs used by the application.
     /// </summary>
@@ -27,9 +48,9 @@ public static class ConfigurationSetup
     /// The directory path for game logs as a string. If a valid configuration is found,
     /// it returns the configured logs directory. Otherwise, prompts the user to input a valid logs directory path.
     /// </returns>
-    public static string GetLogsDirectoryFromUser()
+    private string GetLogsDirectoryFromUser()
     {
-        var config = EbhConfiguration.GetConfiguration();
+        var config = ebhConfiguration.GetConfiguration();
 
         if (config is not null && !string.IsNullOrEmpty(config.LogsDirectory))
         {
@@ -60,7 +81,7 @@ public static class ConfigurationSetup
     /// <returns>
     /// The directory path entered by the user as a string. Ensures the input is not empty and processes the path for validation.
     /// </returns>
-    private static string GetPathFromUser()
+    private string GetPathFromUser()
     {
         while (true)
         {
@@ -84,7 +105,7 @@ public static class ConfigurationSetup
     /// <returns>
     /// The validated directory path as a string. If the provided path is valid, it updates the configuration and returns the path; otherwise, prompts for a new valid path.
     /// </returns>
-    private static string ValidateAndGetPath(string path)
+    private string ValidateAndGetPath(string path)
     {
         while (true)
         {
@@ -96,8 +117,8 @@ public static class ConfigurationSetup
                 {
                     LogsDirectory = path
                 };
-                EbhConfiguration.SaveConfiguration(config);
-                
+                ebhConfiguration.SaveConfiguration(config);
+
                 Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Configuration saved.");
 
                 return path;
@@ -112,32 +133,5 @@ public static class ConfigurationSetup
                 Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: Path cannot be empty. Please try again.");
             }
         }
-    }
-
-    /// <summary>
-    /// Prompts the user to enter a character name and API key, and adds the API key to the application configuration.
-    /// </summary>
-    /// <remarks>
-    /// If the provided character name or API key is empty or null, the operation is aborted and a message is displayed to the user.
-    /// The API key is saved using the configuration management methods provided by the EbhConfiguration class.
-    /// </remarks>
-    public static void AddApiKey()
-    {
-        Console.WriteLine();
-        
-        Console.Write("Please provide character name: ");
-        var characterName = Console.ReadLine();
-        Console.Write("Please provide API key: ");
-        var apiKey = Console.ReadLine();
-
-        if (characterName is null || apiKey is null)
-        {
-            Console.WriteLine("Character name or API key cannot be empty. Please try again.");
-            return;
-        }
-        
-        EbhConfiguration.AddApiKey(characterName.Trim(), apiKey.Trim());
-
-        Console.WriteLine($"Added API key for character {characterName} to configuration.");
     }
 }
