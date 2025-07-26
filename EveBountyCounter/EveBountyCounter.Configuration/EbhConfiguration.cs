@@ -54,7 +54,7 @@ internal class EbhConfiguration : IEbhConfiguration
         }
         else
         {
-            apiKeys.Add(new EveWorkbenchCharacterApi
+            apiKeys.Add(new EveWorkbenchApiKey
             {
                 CharacterName = characterName,
                 CharacterId = characterId,
@@ -65,7 +65,7 @@ internal class EbhConfiguration : IEbhConfiguration
         SaveConfiguration(config);
     }
 
-    public EveWorkbenchCharacterApi? GetCharacter(string characterName)
+    public EveWorkbenchApiKey? GetCharacter(string characterName)
     {
         var config = GetConfiguration();
         if (config is null)

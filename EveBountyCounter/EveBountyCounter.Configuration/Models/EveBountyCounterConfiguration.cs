@@ -16,5 +16,5 @@ public class EveBountyCounterConfiguration
     /// <summary>
     /// Gets or sets the list of API keys for accessing EveWorkbench services.
     /// </summary>
-    public List<EveWorkbenchCharacterApi> EveWorkbenchCharacterApis { get; set; } = [];
+    public List<EveWorkbenchApiKey> EveWorkbenchCharacterApis { get; set; } = [];
 }

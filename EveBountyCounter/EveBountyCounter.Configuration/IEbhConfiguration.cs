@@ -39,8 +39,8 @@ public interface IEbhConfiguration
     /// </summary>
     /// <param name="characterName">The name of the character whose API key details are to be retrieved.</param>
     /// <returns>
-    /// An instance of <see cref="EveWorkbenchCharacterApi"/> containing the API key details for the specified character
+    /// An instance of <see cref="EveWorkbenchApiKey"/> containing the API key details for the specified character
     /// if a match is found; otherwise, null if the character is not found in the configuration.
     /// </returns>
-    EveWorkbenchCharacterApi? GetCharacter(string characterName);
+    EveWorkbenchApiKey? GetCharacter(string characterName);
 }

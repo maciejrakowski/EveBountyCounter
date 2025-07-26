@@ -6,7 +6,7 @@
 /// <remarks>
 /// This configuration stores the character name and associated API key for accessing EVE Workbench services.
 /// </remarks>
-public class EveWorkbenchCharacterApi
+public class EveWorkbenchApiKey
 {
     /// <summary>
     /// Gets or sets the name of the character associated with the Eve Workbench API key.
