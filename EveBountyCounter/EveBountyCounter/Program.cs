@@ -24,7 +24,7 @@ internal class Program
         builder.Services.AddLogging(logging => 
         {
             logging.AddConsole();
-            logging.SetMinimumLevel(LogLevel.Information);
+            logging.SetMinimumLevel(LogLevel.Error);
         });
         
         var host = builder.Build();
