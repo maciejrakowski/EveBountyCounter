@@ -1,28 +1,29 @@
-﻿using EveBountyCounter.EwbApiClient.Contracts;
+﻿using System.Globalization;
+using EveBountyCounter.EwbApiClient.Contracts;
 
 namespace EveBountyCounter.EwbApiClient;
 
 /// <inheritdoc cref="IEwbApiClient"/>
 internal class EwbApiClient(IHttpClientFactory httpClientFactory) : ApiClient(httpClientFactory), IEwbApiClient
 {
-    public async Task<bool> SubmitBountyAsync(string apiKey, decimal bountyAmount)
+    public async Task<RealtimeBountyUpdateResponse?> SubmitBountyAsync(string apiKey, decimal bountyAmount)
     {
         var headers = GetHeaders(apiKey);
         string url = EwbUrl.Bounty.Replace("{{version}}", "1");
 
-        await SendAsync<string>(url, HttpMethod.Post, headers, $"{{\"bounty\": {bountyAmount}}}");
+        var result = await SendAsync<RealtimeBountyUpdateResponse>(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
 
-        return true;
+        return result;
     }
-    
-    public async Task<bool> SubmitBountyAsync(string apiKey, string characterId, decimal bountyAmount)
+
+    public async Task<RealtimeBountyUpdateResponse?> SubmitBountyAsync(string apiKey, string characterId, decimal bountyAmount)
     {
         var headers = GetHeaders(apiKey);
         string url = EwbUrl.BountyByCharacter.Replace("{{version}}", "1").Replace("{{characterId}}", characterId);
 
-        await SendAsync<string>(url, HttpMethod.Post, headers, $"{{\"bounty\": {bountyAmount}}}");
+        var result = await SendAsync<RealtimeBountyUpdateResponse>(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
 
-        return true;
+        return result;
     }
 
     public async Task<IEnumerable<CharacterResponse>> GetCharactersAsync(string apiKey)

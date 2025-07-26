@@ -188,7 +188,7 @@ public class CounterWorker : BackgroundWorker
             
             var submitted = await _ewbApiClient.SubmitBountyAsync(character.ApiKey, character.CharacterId.ToString()!, bounty.TotalBounty);
 
-            if (!submitted)
+            if (submitted is null)
             {
                 Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}: {characterName}: Error submitting bounties");
                 return;
