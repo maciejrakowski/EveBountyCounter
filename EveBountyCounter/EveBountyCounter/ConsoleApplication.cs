@@ -12,10 +12,9 @@ public class ConsoleApplication(
     /// </summary>
     public async Task RunAsync()
     {
+        configurationSetup.GetLogsDirectory();
 
         worker.Start();
-
-        configurationSetup.GetLogsDirectory();
 
         Console.WriteLine("EVE Bounty Counter started. Press H for help, Q or ESC to quit.");
 
