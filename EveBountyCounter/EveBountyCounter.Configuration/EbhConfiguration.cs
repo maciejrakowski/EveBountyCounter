@@ -45,7 +45,7 @@ internal class EbhConfiguration : IEbhConfiguration
             return;
         }
 
-        var apiKeys = config.EveWorkbenchCharacterApis;
+        var apiKeys = config.EveWorkbenchApiKeys;
         var existingApiKey = apiKeys.FirstOrDefault(x => x.CharacterName == characterName);
         if (existingApiKey is not null)
         {
@@ -73,6 +73,6 @@ internal class EbhConfiguration : IEbhConfiguration
             return null;
         }
         
-        return config.EveWorkbenchCharacterApis.FirstOrDefault(x => x.CharacterName == characterName);
+        return config.EveWorkbenchApiKeys.FirstOrDefault(x => x.CharacterName == characterName);
     }
 }
