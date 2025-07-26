@@ -26,7 +26,6 @@ internal class EbhConfiguration : IEbhConfiguration
         }
 
         var config = JsonSerializer.Deserialize(fileContent, DeserializationModeOptionsContext.Default.EveBountyCounterConfiguration);
-        ;
 
         return config;
     }

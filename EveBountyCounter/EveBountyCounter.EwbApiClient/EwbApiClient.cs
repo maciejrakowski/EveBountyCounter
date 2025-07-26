@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
+using System.Text.Json;
 using EveBountyCounter.EwbApiClient.Contracts;
+using EveBountyCounter.EwbApiClient.JsonSerializerContext;
 using Microsoft.Extensions.Logging;
 
 namespace EveBountyCounter.EwbApiClient;
@@ -12,8 +14,15 @@ internal class EwbApiClient(IHttpClientFactory httpClientFactory, ILogger<EwbApi
         var headers = GetHeaders(apiKey);
         string url = EwbUrl.Bounty.Replace("{{version}}", "1");
 
-        var result = await SendAsync<RealtimeBountyUpdateResponse>(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
+        var response = await SendAsync(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
 
+        if (response is null)
+        {
+            return null;
+        }
+        
+        var result = JsonSerializer.Deserialize(response, DeserializationModeOptionsContext.Default.RealtimeBountyUpdateResponse);
+        
         return result;
     }
 
@@ -22,8 +31,15 @@ internal class EwbApiClient(IHttpClientFactory httpClientFactory, ILogger<EwbApi
         var headers = GetHeaders(apiKey);
         string url = EwbUrl.BountyByCharacter.Replace("{{version}}", "1").Replace("{{characterId}}", characterId);
 
-        var result = await SendAsync<RealtimeBountyUpdateResponse>(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
+        var response = await SendAsync(url, HttpMethod.Post, headers, bountyAmount.ToString(new CultureInfo("en-US")));
 
+        if (response is null)
+        {
+            return null;
+        }
+        
+        var result = JsonSerializer.Deserialize(response, DeserializationModeOptionsContext.Default.RealtimeBountyUpdateResponse);
+        
         return result;
     }
 
@@ -32,9 +48,16 @@ internal class EwbApiClient(IHttpClientFactory httpClientFactory, ILogger<EwbApi
         var headers = GetHeaders(apiKey);
         string url = EwbUrl.Characters.Replace("{{version}}", "1");
 
-        var response = await SendAsync<IEnumerable<CharacterResponse>>(url, HttpMethod.Get, headers);
+        var response = await SendAsync(url, HttpMethod.Get, headers);
 
-        return response ?? [];
+        if (response is null)
+        {
+            return [];
+        }
+        
+        var result =  JsonSerializer.Deserialize(response, DeserializationModeOptionsContext.Default.IEnumerableCharacterResponse);
+        
+        return result ?? [];
     }
 
     /// <summary>
