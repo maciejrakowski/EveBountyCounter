@@ -2,6 +2,15 @@
 
 All notable changes to EveBountyCounter project will be documented in this file.
 
+## [0.2.6] - 2025-07-26
+
+### Changed
+- Improved communication with EWB
+- Code refactoring
+
+### Fixed
+- Configuration issue
+
 ## [0.2.5] - 2025-07-26
 
 ### Fixed
