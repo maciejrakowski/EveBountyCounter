@@ -3,6 +3,7 @@ using EveBountyCounter.EwbApiClient.Framework;
 using EveBountyHunter.Configuration.Framework;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 
 internal class Program
@@ -19,12 +20,12 @@ internal class Program
         builder.Services.UseEbhConfiguration();
         builder.Services.UseEwbApiClient();
         
-        // Add logging
-        // builder.Services.AddLogging(logging => 
-        // {
-        //     logging.AddConsole();
-        //     logging.SetMinimumLevel(LogLevel.Information);
-        // });
+        //Add logging
+        builder.Services.AddLogging(logging => 
+        {
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Information);
+        });
         
         var host = builder.Build();
         

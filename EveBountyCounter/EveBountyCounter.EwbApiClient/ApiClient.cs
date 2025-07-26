@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace EveBountyCounter.EwbApiClient;
 
 /// <summary>
 /// Represents a base class for API client implementations.
 /// </summary>
-internal abstract class ApiClient(IHttpClientFactory httpClientFactory)
+internal abstract class ApiClient(IHttpClientFactory httpClientFactory, ILogger<ApiClient>? logger)
 {
     /// <summary>
     /// Sends an asynchronous HTTP request to the given URL with the specified method, headers, and optional body,
@@ -32,7 +33,10 @@ internal abstract class ApiClient(IHttpClientFactory httpClientFactory)
         var response = await client.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
-            return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+            var content = await response.Content.ReadAsStringAsync();
+            logger?.LogInformation("{}; Response from {}: {}", nameof(SendAsync), url, content);
+            
+            return JsonConvert.DeserializeObject<T>(content);
         }
         
         return default;

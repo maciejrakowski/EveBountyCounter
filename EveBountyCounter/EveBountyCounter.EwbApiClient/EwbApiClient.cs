@@ -1,10 +1,11 @@
 ﻿using System.Globalization;
 using EveBountyCounter.EwbApiClient.Contracts;
+using Microsoft.Extensions.Logging;
 
 namespace EveBountyCounter.EwbApiClient;
 
 /// <inheritdoc cref="IEwbApiClient"/>
-internal class EwbApiClient(IHttpClientFactory httpClientFactory) : ApiClient(httpClientFactory), IEwbApiClient
+internal class EwbApiClient(IHttpClientFactory httpClientFactory, ILogger<EwbApiClient> logger) : ApiClient(httpClientFactory, logger), IEwbApiClient
 {
     public async Task<RealtimeBountyUpdateResponse?> SubmitBountyAsync(string apiKey, decimal bountyAmount)
     {
